@@ -3,13 +3,13 @@ package model
 import "fmt"
 
 type Stack struct {
-	Name string
+	Name string			`json:"Name"`
 	Services []Service
 }
 
 type Service struct {
-	Name string
-	Alias string
+	Name string		`json:"Name"`
+	Alias string	`json:"Alias"`
 	ProxyConfigurations []ProxyConfiguration
 }
 
@@ -22,10 +22,10 @@ func (s *Service) String() string {
 }
 
 type ProxyConfiguration struct {
-	Https bool
-	ServicePath string
-	ServiceDomain string
-	ServicePort int
+	Https         bool   `json:"Https"`
+	ServicePath   string `json:"ServicePath"`
+	ServiceDomain string `json:"ServiceDomain"`
+	ServicePort   int    `json:"ServicePort"`
 }
 
 func (pc *ProxyConfiguration) String() string {
