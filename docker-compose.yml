@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  service-lister:
+    image: caladreas/flow-proxy-service-lister:${TAG:-latest}
+    build: .
+    ports:
+      - 7777:7777
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      resources:
+        reservations:
+          memory: 10M
+        limits:
+          memory: 20M
