@@ -38,44 +38,29 @@ func DiscoverStacks() []model.Stack {
 		for _, service := range services {
 			proxyService := model.Service{Name: service.Spec.Name}
 			stackName := "Other"
-			foundService := false
-			proxyConfig := &model.ProxyConfiguration{Https: false}
+			//foundService := false
+			proxyConfigurations := make(map[int]*model.ProxyConfiguration, 10)
+			baseProxyConfig := &model.ProxyConfiguration{Https: false}
 
 			for key := range service.Spec.Labels {
 				if key == "com.docker.stack.namespace"  {
 					stackName = service.Spec.Labels[key]
-				}
-
-				if strings.HasPrefix(key, "com.df" ) {
-					labelName := key
-					labelValue := service.Spec.Labels[key]
-					labelNameParts := strings.Split(labelName, ".")
-					if len(labelNameParts) < 3 {
-						continue
-					}
-					labelName = labelNameParts[len(labelNameParts) - 1]
-
-					switch labelName {
-					case "httpsOnly":
-						if labelValue == "true" {
-							proxyConfig.Https = true
-						}
-						foundService = true
-					case "servicePath":
-						proxyConfig.ServicePath = labelValue
-						foundService = true
-					case "serviceDomain":
-						proxyConfig.ServiceDomain = labelValue
-						foundService = true
-					case "port":
-						foundService = true
-						proxyConfig.ServicePort, _ = strconv.Atoi(labelValue)
+					if strings.HasPrefix(proxyService.Name, stackName + "_") {
+						proxyService.Name = strings.TrimPrefix(proxyService.Name, stackName + "_")
 					}
 				}
+				processServiceConfigurations(&proxyService, baseProxyConfig, proxyConfigurations, key, service.Spec.Labels)
 			}
-			if foundService {
-				proxyService.ProxyConfigurations = append(proxyService.ProxyConfigurations, *proxyConfig)
+
+			if len(proxyConfigurations) == 0 {
+				proxyService.ProxyConfigurations = append(proxyService.ProxyConfigurations, *baseProxyConfig)
+			} else {
+				for _,proxyConfig := range proxyConfigurations {
+					fillUpFromBase(baseProxyConfig, proxyConfig)
+					proxyService.ProxyConfigurations = append(proxyService.ProxyConfigurations, *proxyConfig)
+				}
 			}
+
 			proxiedServices[stackName] = append(proxiedServices[stackName], proxyService)
 		}
 
@@ -100,4 +85,67 @@ func DiscoverStacks() []model.Stack {
 
 
 	return stacks
+}
+
+// we might have several shared properties in the base
+// and maybe only a single different property in the individual proxy Configs
+// so we should fill up the remaining properties from the base config
+func fillUpFromBase(baseConfig *model.ProxyConfiguration, config *model.ProxyConfiguration) {
+	if config.ServicePort == 0 {
+		config.ServicePort = baseConfig.ServicePort
+	}
+
+	if config.ServicePath == "" {
+		config.ServicePath = baseConfig.ServicePath
+	}
+
+	if config.ServiceDomain == "" {
+		config.ServiceDomain = baseConfig.ServiceDomain
+	}
+}
+
+func processServiceConfigurations(proxyService *model.Service, baseConfig *model.ProxyConfiguration, configs map[int]*model.ProxyConfiguration, key string, labels map[string]string) {
+
+	tmpProxyConfig := baseConfig
+
+	if strings.HasPrefix(key, "com.df" ) {
+		labelName := key
+		labelValue := labels[key]
+		labelNameParts := strings.Split(labelName, ".")
+		if len(labelNameParts) < 3 {
+			return
+		} else if len(labelNameParts) == 4 {
+			fmt.Printf("  > Found label with a prefix: %s=%s (%s)\n", labelName, labelValue, labelNameParts[3])
+			i, err := strconv.Atoi(labelNameParts[3])
+			if err != nil {
+				fmt.Println(err)
+			} else if i < 10 {
+				tmpProxyConfig = configs[i]
+				if tmpProxyConfig == nil {
+					fmt.Printf("  > Create new config for prefix (%d)\n", i)
+					tmpProxyConfig = &model.ProxyConfiguration{Https: false}
+					configs[i] = tmpProxyConfig
+				} else {
+					fmt.Printf("  > Already had this prefix in here (%d)\n", i)
+				}
+			}
+		}
+		labelName = labelNameParts[2]
+
+		switch labelName {
+		case "httpsOnly":
+			if labelValue == "true" {
+				tmpProxyConfig.Https = true
+			}
+		case "servicePath":
+			tmpProxyConfig.ServicePath = labelValue
+			if !strings.HasSuffix(tmpProxyConfig.ServicePath, "/") {
+				tmpProxyConfig.ServicePath += "/"
+			}
+		case "serviceDomain":
+			tmpProxyConfig.ServiceDomain = labelValue
+		case "srcPort":
+			tmpProxyConfig.ServicePort, _ = strconv.Atoi(labelValue)
+		}
+	}
 }

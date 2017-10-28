@@ -22,10 +22,10 @@ func (s *Service) String() string {
 }
 
 type ProxyConfiguration struct {
-	Https         bool   `json:"Https"`
-	ServicePath   string `json:"ServicePath"`
-	ServiceDomain string `json:"ServiceDomain"`
-	ServicePort   int    `json:"ServicePort"`
+	Https         	bool   `json:"Https"`
+	ServicePath   	string `json:"ServicePath"`
+	ServiceDomain 	string `json:"ServiceDomain"`
+	ServicePort		int    `json:"ServicePort"`
 }
 
 func (pc *ProxyConfiguration) String() string {

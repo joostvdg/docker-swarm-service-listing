@@ -2,8 +2,10 @@ version: "3"
 
 services:
   service-lister:
-    image: caladreas/flow-proxy-service-lister:${TAG:-latest}
+    image: caladreas/flow-proxy-service-listing:${TAG:-latest}
     build: .
+    networks:
+      - docker-swarm-service-listing
     ports:
       - 7777:7777
     volumes:
@@ -16,3 +18,8 @@ services:
           memory: 10M
         limits:
           memory: 20M
+
+networks:
+    docker-swarm-service-listing:
+      external: true
+
