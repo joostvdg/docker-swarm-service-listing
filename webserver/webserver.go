@@ -1,14 +1,14 @@
 package webserver
 
 import (
-	"net/http"
-	"fmt"
-	"log"
 	"../model"
 	"context"
-	"time"
-	"github.com/gorilla/mux"
 	"encoding/json"
+	"fmt"
+	"github.com/gorilla/mux"
+	"log"
+	"net/http"
+	"time"
 )
 
 // Wrapper for the data we send to the UI
@@ -32,7 +32,6 @@ type Server struct {
 	logger *log.Logger
 	mux    *http.ServeMux
 }
-
 
 // Starts the webserver on the port given
 // The channel bool is for telling the server to shutdown

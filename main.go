@@ -3,11 +3,11 @@ package main
 import (
 	"./probe"
 	"./webserver"
-	"time"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
