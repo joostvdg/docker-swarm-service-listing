@@ -1,15 +1,15 @@
 package probe
 
 import (
+	"../model"
 	"context"
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"../model"
-	"strings"
-	"strconv"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func DiscoverStacks() []model.Stack {
@@ -43,10 +43,10 @@ func DiscoverStacks() []model.Stack {
 			baseProxyConfig := &model.ProxyConfiguration{Https: false}
 
 			for key := range service.Spec.Labels {
-				if key == "com.docker.stack.namespace"  {
+				if key == "com.docker.stack.namespace" {
 					stackName = service.Spec.Labels[key]
-					if strings.HasPrefix(proxyService.Name, stackName + "_") {
-						proxyService.Name = strings.TrimPrefix(proxyService.Name, stackName + "_")
+					if strings.HasPrefix(proxyService.Name, stackName+"_") {
+						proxyService.Name = strings.TrimPrefix(proxyService.Name, stackName+"_")
 					}
 				}
 				processServiceConfigurations(&proxyService, baseProxyConfig, proxyConfigurations, key, service.Spec.Labels)
@@ -55,7 +55,7 @@ func DiscoverStacks() []model.Stack {
 			if len(proxyConfigurations) == 0 {
 				proxyService.ProxyConfigurations = append(proxyService.ProxyConfigurations, *baseProxyConfig)
 			} else {
-				for _,proxyConfig := range proxyConfigurations {
+				for _, proxyConfig := range proxyConfigurations {
 					fillUpFromBase(baseProxyConfig, proxyConfig)
 					proxyService.ProxyConfigurations = append(proxyService.ProxyConfigurations, *proxyConfig)
 				}
@@ -72,7 +72,7 @@ func DiscoverStacks() []model.Stack {
 				continue
 			}
 			stack := model.Stack{
-				Name: stackName,
+				Name:     stackName,
 				Services: services,
 			}
 			stacks[count] = stack
@@ -82,7 +82,6 @@ func DiscoverStacks() []model.Stack {
 	}
 
 	fmt.Printf(" > Found %d stacks\n", len(stacks))
-
 
 	return stacks
 }
@@ -108,7 +107,7 @@ func processServiceConfigurations(proxyService *model.Service, baseConfig *model
 
 	tmpProxyConfig := baseConfig
 
-	if strings.HasPrefix(key, "com.df" ) {
+	if strings.HasPrefix(key, "com.df") {
 		labelName := key
 		labelValue := labels[key]
 		labelNameParts := strings.Split(labelName, ".")

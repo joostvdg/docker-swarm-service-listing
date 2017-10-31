@@ -1,14 +1,14 @@
 package webserver
 
 import (
-	"net/http"
-	"fmt"
-	"log"
 	"../model"
 	"context"
-	"time"
-	"github.com/gorilla/mux"
 	"encoding/json"
+	"fmt"
+	"github.com/gorilla/mux"
+	"log"
+	"net/http"
+	"time"
 )
 
 type WebserverData struct {
@@ -27,7 +27,6 @@ type Server struct {
 	logger *log.Logger
 	mux    *http.ServeMux
 }
-
 
 func StartServer(port string, data *WebserverData, c chan bool) {
 	router := mux.NewRouter()
