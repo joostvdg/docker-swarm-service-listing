@@ -19,7 +19,7 @@ func main() {
 	webserverData := &webserver.WebserverData{Stacks: stacks}
 
 	c := make(chan bool)
-	go webserver.StartServer("9999", webserverData, c)
+	go webserver.StartServer("7777", webserverData, c)
 	fmt.Println("> Started the web server, now polling swarm")
 
 	stop := make(chan os.Signal, 1)
