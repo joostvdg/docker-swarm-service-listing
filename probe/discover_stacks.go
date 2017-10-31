@@ -12,6 +12,8 @@ import (
 	"os"
 )
 
+// Check the docker host to see if there are docker services
+// From those services, we will attempt to discover the stacks
 func DiscoverStacks() []model.Stack {
 	stacks := make([]model.Stack, 0)
 
@@ -38,7 +40,6 @@ func DiscoverStacks() []model.Stack {
 		for _, service := range services {
 			proxyService := model.Service{Name: service.Spec.Name}
 			stackName := "Other"
-			//foundService := false
 			proxyConfigurations := make(map[int]*model.ProxyConfiguration, 10)
 			baseProxyConfig := &model.ProxyConfiguration{Https: false}
 
@@ -82,8 +83,6 @@ func DiscoverStacks() []model.Stack {
 	}
 
 	fmt.Printf(" > Found %d stacks\n", len(stacks))
-
-
 	return stacks
 }
 
