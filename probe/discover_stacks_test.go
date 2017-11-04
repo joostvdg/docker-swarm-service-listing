@@ -1,9 +1,9 @@
 package probe
 
 import (
-	"testing"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestNoProxiedSwarmServices(t *testing.T) {
@@ -11,8 +11,6 @@ func TestNoProxiedSwarmServices(t *testing.T) {
 	proxiedServices := FindProxiedServices(swarmServices)
 	assert.Equal(t, 0, len(proxiedServices))
 }
-
-
 
 func TestSimpleListOfProxiedServices(t *testing.T) {
 
@@ -24,18 +22,16 @@ func TestSimpleListOfProxiedServices(t *testing.T) {
 	assert.Equal(t, 1, len(proxiedServices))
 }
 
-
-
 func createSampleSwarmService() swarm.Service {
 	labels := make(map[string]string, 4)
 	labels["com.df.httpsOnly"] = "true"
 	labels["com.df.notify"] = "true"
 	labels["com.df.distribute"] = "true"
 	labels["com.df.servicePath"] = "/"
-	containerSpec := swarm.ContainerSpec {
+	containerSpec := swarm.ContainerSpec{
 		Image: "helloworld",
 	}
-	taskSpec := swarm.TaskSpec {
+	taskSpec := swarm.TaskSpec{
 		ContainerSpec: &containerSpec,
 	}
 	var numReplicas uint64
@@ -50,13 +46,13 @@ func createSampleSwarmService() swarm.Service {
 		Labels: labels,
 	}
 	swarmService1Spec := swarm.ServiceSpec{
-		Mode:mode,
+		Mode:         mode,
 		TaskTemplate: taskSpec,
-		Annotations: annotations,
+		Annotations:  annotations,
 	}
 	swarmService := swarm.Service{
-		ID: "abcdefg",
-		Spec:swarmService1Spec,
+		ID:   "abcdefg",
+		Spec: swarmService1Spec,
 	}
 	return swarmService
 }

@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io"
 	"log"
 	"net/http"
 	"time"
-	"io"
 )
 
 // WebserverData is wrapper for the data we send to the UI

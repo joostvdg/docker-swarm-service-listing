@@ -1,12 +1,13 @@
 package webserver
+
 import (
+	"../model"
+	"fmt"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"testing"
-	"github.com/stretchr/testify/assert"
-	"fmt"
 	"strings"
-	"../model"
+	"testing"
 )
 
 func TestStacksHandlerEmptyResponse(t *testing.T) {
@@ -68,31 +69,31 @@ func TestStacksHandlerSimpleResponse(t *testing.T) {
 	assert.Equal(t, expected, actual, "They should be equal")
 }
 func createWebserverData() *WebserverData {
-	proxyConfig1 := model.ProxyConfiguration{ServicePath:"/demo1", Https: false}
+	proxyConfig1 := model.ProxyConfiguration{ServicePath: "/demo1", Https: false}
 	service1ProxyConfigs := make([]model.ProxyConfiguration, 1)
 	service1ProxyConfigs[0] = proxyConfig1
 	service1 := model.Service{Name: "ServiceOne", Alias: "", ProxyConfigurations: service1ProxyConfigs}
 
-	proxyConfig2 := model.ProxyConfiguration{ServicePath:"/demo2", Https: true, }
-	proxyConfig3 := model.ProxyConfiguration{ServicePath:"/", Https: true, ServicePort: 18445, ServiceDomain: "registry.example.com"}
+	proxyConfig2 := model.ProxyConfiguration{ServicePath: "/demo2", Https: true}
+	proxyConfig3 := model.ProxyConfiguration{ServicePath: "/", Https: true, ServicePort: 18445, ServiceDomain: "registry.example.com"}
 	service2ProxyConfigs := make([]model.ProxyConfiguration, 2)
 	service2ProxyConfigs[0] = proxyConfig2
 	service2ProxyConfigs[1] = proxyConfig3
 	service2 := model.Service{Name: "ServiceTwo", Alias: "", ProxyConfigurations: service2ProxyConfigs}
 
-	proxyConfig4 := model.ProxyConfiguration{ServicePath:"/demo12", Https: false}
+	proxyConfig4 := model.ProxyConfiguration{ServicePath: "/demo12", Https: false}
 	service3ProxyConfigs := make([]model.ProxyConfiguration, 1)
 	service3ProxyConfigs[0] = proxyConfig4
 	service3 := model.Service{Name: "ServiceThree", Alias: "", ProxyConfigurations: service3ProxyConfigs}
 
 	stack1Services := make([]model.Service, 1)
 	stack1Services[0] = service1
-	stack1 := model.Stack{Name:"StackOne", Services: stack1Services}
+	stack1 := model.Stack{Name: "StackOne", Services: stack1Services}
 
 	stack2Services := make([]model.Service, 2)
 	stack2Services[0] = service2
 	stack2Services[1] = service3
-	stack2 := model.Stack{Name:"StackTwo", Services: stack2Services}
+	stack2 := model.Stack{Name: "StackTwo", Services: stack2Services}
 
 	stacks := make([]model.Stack, 2)
 	stacks[0] = stack1

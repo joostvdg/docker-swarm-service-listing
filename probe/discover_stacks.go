@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 	"strconv"
 	"strings"
-	"github.com/docker/docker/api/types/swarm"
 )
 
 // DiscoverStacks attempts to discover Docker Stacks via a docker host,

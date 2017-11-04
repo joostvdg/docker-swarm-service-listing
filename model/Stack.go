@@ -20,7 +20,7 @@ func (s *Service) String() string {
 	configs := ""
 	for index, config := range s.ProxyConfigurations {
 		lineEnd := "\n"
-		if index == len(s.ProxyConfigurations) -1 {
+		if index == len(s.ProxyConfigurations)-1 {
 			lineEnd = ""
 		}
 		configs += fmt.Sprintf("- %s%s", config.String(), lineEnd)
