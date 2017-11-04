@@ -7,64 +7,30 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"os"
 	"strconv"
 	"strings"
+	"github.com/docker/docker/api/types/swarm"
 )
 
-// Check the docker host to see if there are docker services
-// From those services, we will attempt to discover the stacks
+// DiscoverStacks attempts to discover Docker Stacks via a docker host,
+//  limited to Stacks that contain Services that are proxied via the Docker Flow Proxy
 func DiscoverStacks() []model.Stack {
 	stacks := make([]model.Stack, 0)
+	host := "unix:///var/run/docker.sock"
+	labelFilter := fmt.Sprintf("%s=true", "com.df.notify")
 
 	// TODO: make host configurable
 	// See: https://github.com/vfarcic/docker-flow-swarm-listener/blob/bacbeb663d420289dd461d426d9beb2521540c62/service/service.go
-	host := "unix:///var/run/docker.sock"
-	if len(os.Getenv("DF_DOCKER_HOST")) > 0 {
-		host = os.Getenv("DF_DOCKER_HOST")
-	}
 	fmt.Println(" > Probing Host: " + host)
 
-	cli, err := client.NewEnvClient()
-	if err != nil {
-		panic(err)
-	}
+	services, err := retrieveSwarmServiceList(labelFilter)
 
-	filter := filters.NewArgs()
-	filter.Add("label", fmt.Sprintf("%s=true", "com.df.notify")) // TODO: make filter optional / parameter
-	services, err := cli.ServiceList(context.Background(), types.ServiceListOptions{Filters: filter})
 	if err != nil {
 		fmt.Println(err.Error())
+	} else if len(services) == 0 {
+		fmt.Printf("   > No Services found with label filter %s", labelFilter)
 	} else {
-		proxiedServices := make(map[string][]model.Service, len(services))
-		for _, service := range services {
-			proxyService := model.Service{Name: service.Spec.Name}
-			stackName := "Other"
-			proxyConfigurations := make(map[int]*model.ProxyConfiguration, 10)
-			baseProxyConfig := &model.ProxyConfiguration{Https: false}
-
-			for key := range service.Spec.Labels {
-				if key == "com.docker.stack.namespace" {
-					stackName = service.Spec.Labels[key]
-					if strings.HasPrefix(proxyService.Name, stackName+"_") {
-						proxyService.Name = strings.TrimPrefix(proxyService.Name, stackName+"_")
-					}
-				}
-				processServiceConfigurations(&proxyService, baseProxyConfig, proxyConfigurations, key, service.Spec.Labels)
-			}
-
-			if len(proxyConfigurations) == 0 {
-				proxyService.ProxyConfigurations = append(proxyService.ProxyConfigurations, *baseProxyConfig)
-			} else {
-				for _, proxyConfig := range proxyConfigurations {
-					fillUpFromBase(baseProxyConfig, proxyConfig)
-					proxyService.ProxyConfigurations = append(proxyService.ProxyConfigurations, *proxyConfig)
-				}
-			}
-
-			proxiedServices[stackName] = append(proxiedServices[stackName], proxyService)
-		}
-
+		proxiedServices := FindProxiedServices(services)
 		stacks = make([]model.Stack, len(proxiedServices))
 		count := 0
 		for stackName, services := range proxiedServices {
@@ -85,6 +51,50 @@ func DiscoverStacks() []model.Stack {
 	fmt.Printf(" > Found %d stacks\n", len(stacks))
 
 	return stacks
+}
+
+func retrieveSwarmServiceList(labelFilter string) ([]swarm.Service, error) {
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		panic(err)
+	}
+
+	filter := filters.NewArgs()
+	filter.Add("label", labelFilter) // TODO: make filter optional / parameter
+	return cli.ServiceList(context.Background(), types.ServiceListOptions{Filters: filter})
+}
+
+// FindProxiedServices will try to find Services that are proxied via Docker Flow Proxy
+func FindProxiedServices(services []swarm.Service) map[string][]model.Service {
+	proxiedServices := make(map[string][]model.Service, len(services))
+	for _, service := range services {
+		proxyService := model.Service{Name: service.Spec.Name}
+		stackName := "Other"
+		proxyConfigurations := make(map[int]*model.ProxyConfiguration, 10)
+		baseProxyConfig := &model.ProxyConfiguration{Https: false}
+
+		for key := range service.Spec.Labels {
+			if key == "com.docker.stack.namespace" {
+				stackName = service.Spec.Labels[key]
+				if strings.HasPrefix(proxyService.Name, stackName+"_") {
+					proxyService.Name = strings.TrimPrefix(proxyService.Name, stackName+"_")
+				}
+			}
+			processServiceConfigurations(&proxyService, baseProxyConfig, proxyConfigurations, key, service.Spec.Labels)
+		}
+
+		if len(proxyConfigurations) == 0 {
+			proxyService.ProxyConfigurations = append(proxyService.ProxyConfigurations, *baseProxyConfig)
+		} else {
+			for _, proxyConfig := range proxyConfigurations {
+				fillUpFromBase(baseProxyConfig, proxyConfig)
+				proxyService.ProxyConfigurations = append(proxyService.ProxyConfigurations, *proxyConfig)
+			}
+		}
+
+		proxiedServices[stackName] = append(proxiedServices[stackName], proxyService)
+	}
+	return proxiedServices
 }
 
 // we might have several shared properties in the base
