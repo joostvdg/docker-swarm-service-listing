@@ -63,25 +63,25 @@ func TestStacksHandlerSimpleResponse(t *testing.T) {
 		status, http.StatusOK))
 
 	// Check the response body is what we expect.
-	expected := `[{"Name":"StackOne","Services":[{"Name":"ServiceOne","Alias":"","ProxyConfigurations":[{"Https":false,"ServicePath":"/demo1","ServiceDomain":"","ServicePort":0}]}]},{"Name":"StackTwo","Services":[{"Name":"ServiceTwo","Alias":"","ProxyConfigurations":[{"Https":true,"ServicePath":"/demo2","ServiceDomain":"","ServicePort":0},{"Https":true,"ServicePath":"/","ServiceDomain":"registry.example.com","ServicePort":18445}]},{"Name":"ServiceThree","Alias":"","ProxyConfigurations":[{"Https":false,"ServicePath":"/demo12","ServiceDomain":"","ServicePort":0}]}]}]`
+	expected := `[{"Name":"StackOne","Services":[{"Name":"ServiceOne","Alias":"","ProxyConfigurations":[{"Https":false,"MainServicePath":"/demo1","ServicePath":"/demo1","ServiceDomain":"","ServicePort":0}]}]},{"Name":"StackTwo","Services":[{"Name":"ServiceTwo","Alias":"","ProxyConfigurations":[{"Https":true,"MainServicePath":"/demo2","ServicePath":"/demo2","ServiceDomain":"","ServicePort":0},{"Https":true,"MainServicePath":"/","ServicePath":"/","ServiceDomain":"registry.example.com","ServicePort":18445}]},{"Name":"ServiceThree","Alias":"","ProxyConfigurations":[{"Https":false,"MainServicePath":"/demo12","ServicePath":"/demo12, /demo123","ServiceDomain":"","ServicePort":0}]}]}]`
 	actual := rr.Body.String()
 	actual = strings.TrimSpace(actual) // for some reason we get a unexpected \n
 	assert.Equal(t, expected, actual, "They should be equal")
 }
 func createWebserverData() *WebserverData {
-	proxyConfig1 := model.ProxyConfiguration{ServicePath: "/demo1", Https: false}
+	proxyConfig1 := model.ProxyConfiguration{MainServicePath: "/demo1", ServicePath: "/demo1", Https: false}
 	service1ProxyConfigs := make([]model.ProxyConfiguration, 1)
 	service1ProxyConfigs[0] = proxyConfig1
 	service1 := model.Service{Name: "ServiceOne", Alias: "", ProxyConfigurations: service1ProxyConfigs}
 
-	proxyConfig2 := model.ProxyConfiguration{ServicePath: "/demo2", Https: true}
-	proxyConfig3 := model.ProxyConfiguration{ServicePath: "/", Https: true, ServicePort: 18445, ServiceDomain: "registry.example.com"}
+	proxyConfig2 := model.ProxyConfiguration{MainServicePath: "/demo2", ServicePath: "/demo2", Https: true}
+	proxyConfig3 := model.ProxyConfiguration{MainServicePath: "/", ServicePath: "/", Https: true, ServicePort: 18445, ServiceDomain: "registry.example.com"}
 	service2ProxyConfigs := make([]model.ProxyConfiguration, 2)
 	service2ProxyConfigs[0] = proxyConfig2
 	service2ProxyConfigs[1] = proxyConfig3
 	service2 := model.Service{Name: "ServiceTwo", Alias: "", ProxyConfigurations: service2ProxyConfigs}
 
-	proxyConfig4 := model.ProxyConfiguration{ServicePath: "/demo12", Https: false}
+	proxyConfig4 := model.ProxyConfiguration{MainServicePath: "/demo12", ServicePath: "/demo12, /demo123", Https: false}
 	service3ProxyConfigs := make([]model.ProxyConfiguration, 1)
 	service3ProxyConfigs[0] = proxyConfig4
 	service3 := model.Service{Name: "ServiceThree", Alias: "", ProxyConfigurations: service3ProxyConfigs}

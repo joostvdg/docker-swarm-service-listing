@@ -32,10 +32,11 @@ func (s *Service) String() string {
 // ProxyConfiguration is a Docker Flow Proxy configuration
 // Limited to what we want to expose
 type ProxyConfiguration struct {
-	Https         bool   `json:"Https"`
-	ServicePath   string `json:"ServicePath"`
-	ServiceDomain string `json:"ServiceDomain"`
-	ServicePort   int    `json:"ServicePort"`
+	Https           bool   `json:"Https"`
+	MainServicePath string `json:"MainServicePath"`
+	ServicePath     string `json:"ServicePath"`
+	ServiceDomain   string `json:"ServiceDomain"`
+	ServicePort     int    `json:"ServicePort"`
 }
 
 // String is the String for proxy config

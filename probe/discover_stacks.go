@@ -109,6 +109,10 @@ func fillUpFromBase(baseConfig *model.ProxyConfiguration, config *model.ProxyCon
 		config.ServicePath = baseConfig.ServicePath
 	}
 
+	if config.MainServicePath == "" {
+		config.MainServicePath = baseConfig.MainServicePath
+	}
+
 	if config.ServiceDomain == "" {
 		config.ServiceDomain = baseConfig.ServiceDomain
 	}
@@ -151,6 +155,12 @@ func processServiceConfigurations(proxyService *model.Service, baseConfig *model
 			tmpProxyConfig.ServicePath = labelValue
 			if !strings.HasSuffix(tmpProxyConfig.ServicePath, "/") {
 				tmpProxyConfig.ServicePath += "/"
+			}
+			if strings.Contains(tmpProxyConfig.ServicePath, ",") {
+				s := strings.Split(tmpProxyConfig.ServicePath, ",")
+				tmpProxyConfig.MainServicePath = s[0]
+			} else {
+				tmpProxyConfig.MainServicePath = tmpProxyConfig.ServicePath
 			}
 		case "serviceDomain":
 			tmpProxyConfig.ServiceDomain = labelValue
